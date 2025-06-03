@@ -73,8 +73,8 @@ python gradioqwerty.py
 ## 📺 项目演示
 
 <!-- 注意：GitHub 的 Markdown 渲染器对直接嵌入视频的支持有限。如果视频无法播放，建议将其上传到 YouTube/Bilibili 等平台，然后在此处嵌入链接，或将视频转换为 GIF 格式。 -->
-<video src="https://raw.githubusercontent.com/kungful/VocabTypeAI/3c2e3159668542f17399789e5578b86b555e6bb4/new_logic/Example.mp4" controls muted loop style="max-width: 100%; height: auto;">
-  您的浏览器不支持视频播放。请点击 <a href="https://raw.githubusercontent.com/kungful/VocabTypeAI/3c2e3159668542f17399789e5578b86b555e6bb4/new_logic/Example.mp4">这里</a> 下载视频。
+<video src="https://raw.githubusercontent.com/kungful/VocabTypeAI/7df52ff12e466555ba46e8cc235c21775ff11f7e/new_logic/Example.mp4" controls muted loop style="max-width: 100%; height: auto;">
+  您的浏览器不支持视频播放。请点击 <a href="https://raw.githubusercontent.com/kungful/VocabTypeAI/7df52ff12e466555ba46e8cc235c21775ff11f7e/new_logic/Example.mp4">这里</a> 下载视频。
 </video>
 
 ## ⚙️ ComfyUI 设置
