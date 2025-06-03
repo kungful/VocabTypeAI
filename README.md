@@ -1,5 +1,10 @@
 # 打字交互音画记忆单词 (Typing Interactive Audio-Visual Word Memorization)
+## 📺 项目演示
 
+<!-- 注意：GitHub 的 Markdown 渲染器对直接嵌入视频的支持有限。如果视频无法播放，建议将其上传到 YouTube/Bilibili 等平台，然后在此处嵌入链接，或将视频转换为 GIF 格式。 -->
+<video src="https://github.com/user-attachments/assets/b9f21bd2-b38e-4287-a20c-7cb7b3cfaac7" controls muted loop style="max-width: 100%; height: auto;">
+  您的浏览器不支持视频播放。请点击 <a href="https://github.com/user-attachments/assets/b9f21bd2-b38e-4287-a20c-7cb7b3cfaac7">这里</a> 下载视频。
+</video>
 这是一个基于 Gradio 构建的创新型单词学习应用程序，旨在通过多感官交互（打字、发音、图像）提升用户的单词记忆效率。它集成了有道词典发音和 ComfyUI 图像生成功能，为用户提供一个沉浸式、个性化的学习体验。
 
 ## ✨ 主要特性
@@ -70,12 +75,7 @@ python gradioqwerty.py
 
 应用程序将在您的浏览器中打开一个 Gradio 界面。
 
-## 📺 项目演示
 
-<!-- 注意：GitHub 的 Markdown 渲染器对直接嵌入视频的支持有限。如果视频无法播放，建议将其上传到 YouTube/Bilibili 等平台，然后在此处嵌入链接，或将视频转换为 GIF 格式。 -->
-<video src="https://github.com/user-attachments/assets/b9f21bd2-b38e-4287-a20c-7cb7b3cfaac7" controls muted loop style="max-width: 100%; height: auto;">
-  您的浏览器不支持视频播放。请点击 <a href="https://github.com/user-attachments/assets/b9f21bd2-b38e-4287-a20c-7cb7b3cfaac7">这里</a> 下载视频。
-</video>
 
 ## ⚙️ ComfyUI 设置
 
