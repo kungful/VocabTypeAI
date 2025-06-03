@@ -1,0 +1,121 @@
+{
+  "1": {
+    "inputs": {
+      "images": [
+        "3",
+        1
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "预览图像"
+    }
+  },
+  "2": {
+    "inputs": {
+      "PreviewTextNode_0": "一个穿着蓝色条纹T恤的男孩，正站在堆满沙子的沙滩上，手里拿着一个红色的塑料铲子，专注地挖着一个大坑。阳光洒在他的脸上，映出细小的汗珠，海风吹拂着他的头发。",
+      "speak_and_recognation": {
+        "__value__": [
+          false,
+          true
+        ]
+      },
+      "text": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "PreviewTextNode",
+    "_meta": {
+      "title": "Preview Text Node"
+    }
+  },
+  "3": {
+    "inputs": {
+      "prompt": "你是造句专家，将单词造句称具体的一个画面，只生成画面描述，其他的不需要写：",
+      "input_type": "text",
+      "model_version": "gemini-2.0-flash-exp",
+      "operation_mode": "analysis",
+      "chat_mode": false,
+      "clear_history": false,
+      "Additional_Context": "boy",
+      "api_key": "AIzaSyD-xr1wEj95aYgr2VGIIgVfLyKpNiJAQA4",
+      "max_output_tokens": 8192,
+      "temperature": 0.4,
+      "structured_output": false,
+      "max_images": 6,
+      "batch_count": 1,
+      "seed": [
+        "7",
+        0
+      ],
+      "speak_and_recognation": {
+        "__value__": [
+          false,
+          true
+        ]
+      }
+    },
+    "class_type": "GeminiFlash",
+    "_meta": {
+      "title": "Gemini Flash 2.0 Experimental"
+    }
+  },
+  "7": {
+    "inputs": {
+      "seed": 851976653931721,
+      "name": "Hua_gradio_Seed"
+    },
+    "class_type": "Hua_gradio_Seed",
+    "_meta": {
+      "title": "🧙hua_gradio随机种"
+    }
+  },
+  "8": {
+    "inputs": {
+      "前缀": [
+        "3",
+        0
+      ],
+      "输入数字": [
+        "7",
+        0
+      ],
+      "字体大小": 25,
+      "条码高度缩放": 0.5,
+      "文本下边距": 15,
+      "条码与文本间距": 10,
+      "左右边距": 2,
+      "顶部边距": 5,
+      "全局缩放比例": 1
+    },
+    "class_type": "BarcodeGeneratorNode",
+    "_meta": {
+      "title": "hua_条形码生成器"
+    }
+  },
+  "11": {
+    "inputs": {
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "预览图像"
+    }
+  },
+  "16": {
+    "inputs": {
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImageWebsocket",
+    "_meta": {
+      "title": "保存图像（网络接口）"
+    }
+  }
+}

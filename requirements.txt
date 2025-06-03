@@ -1,0 +1,3 @@
+gradio
+websocket-client
+Pillow
