@@ -70,6 +70,10 @@ python gradioqwerty.py
 
 应用程序将在您的浏览器中打开一个 Gradio 界面。
 
+## 📺 项目演示
+
+<video src="https://raw.githubusercontent.com/kungful/VocabTypeAI/3c2e3159668542f17399789e5578b86b555e6bb4/new_logic/Example.mp4" controls muted loop style="max-width: 100%; height: auto;"></video>
+
 ## ⚙️ ComfyUI 设置
 
 在 Gradio 界面的 "ComfyUI 设置" 标签页中，您可以配置以下参数：
