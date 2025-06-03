@@ -37,7 +37,7 @@ pip install -r requirements.txt
 为了使用图像生成功能，您需要运行一个 ComfyUI 服务器。
 *   **下载 ComfyUI**: 访问 [ComfyUI GitHub 仓库](https://github.com/comfyanonymous/ComfyUI) 并按照其说明进行安装。
 *   **启动 ComfyUI 服务器**: 通常通过运行 `python main.py` 来启动。确保 ComfyUI 服务器在可访问的地址和端口上运行（例如 `http://127.0.0.1:8188`）。
-*   **放置工作流文件**: 将您希望使用的 ComfyUI 工作流 JSON 文件放置在 `websocket_simple_comfyui/` 目录下。本项目默认使用 `websocket_simple_comfyui/` 目录下的第一个 JSON 文件。
+*   **放置工作流文件**:把websocket_simple_comfyui/下的工作流跑通就可以里，再把comfyui网址链接粘贴到comfyui设置里， 您希望使用自定义 ComfyUI 工作流 JSON 文件放置在 `websocket_simple_comfyui/` 目录下。本项目默认使用 `websocket_simple_comfyui/` 目录下的第一个 JSON 文件。
     *   **重要提示**: 确保您的工作流包含一个 `GeminiFlash` 节点（用于接收单词作为 `Additional_Context`）和一个 `SaveImageWebsocket` 类型的节点（用于输出图像）。如果工作流包含 `Hua_gradio_Seed` 节点，脚本将自动为其填入随机种子。
 
 ### 4. 准备词典数据
