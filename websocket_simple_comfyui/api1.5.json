@@ -1,0 +1,218 @@
+{
+  "3": {
+    "inputs": {
+      "seed": [
+        "29",
+        0
+      ],
+      "steps": 20,
+      "cfg": 8,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1,
+      "model": [
+        "25",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "K采样器"
+    }
+  },
+  "5": {
+    "inputs": {
+      "width": [
+        "24",
+        0
+      ],
+      "height": [
+        "24",
+        1
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "空Latent图像"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": [
+        "32",
+        0
+      ],
+      "clip": [
+        "25",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP文本编码"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "25",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP文本编码"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "3",
+        0
+      ],
+      "vae": [
+        "25",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE解码"
+    }
+  },
+  "9": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "保存图像"
+    }
+  },
+  "24": {
+    "inputs": {
+      "custom_width": 1024,
+      "custom_height": 1024,
+      "name": "Hua_gradio_resolution"
+    },
+    "class_type": "Hua_gradio_resolution",
+    "_meta": {
+      "title": "📜hua_gradio分辨率"
+    }
+  },
+  "25": {
+    "inputs": {
+      "ckpt_name": "dreamshaper_8.safetensors",
+      "name": "Hua_CheckpointLoaderSimple"
+    },
+    "class_type": "Hua_CheckpointLoaderSimple",
+    "_meta": {
+      "title": "🌊hua_gradio检查点加载器"
+    }
+  },
+  "28": {
+    "inputs": {
+      "string": "",
+      "name": {
+        "__value__": [
+          false,
+          true
+        ]
+      }
+    },
+    "class_type": "GradioTextBad",
+    "_meta": {
+      "title": "🔥gradio负向提示词"
+    }
+  },
+  "29": {
+    "inputs": {
+      "seed": 367463873601339,
+      "name": "Hua_gradio_Seed"
+    },
+    "class_type": "Hua_gradio_Seed",
+    "_meta": {
+      "title": "🧙hua_gradio随机种"
+    }
+  },
+  "32": {
+    "inputs": {
+      "prompt": "你是造句专家，将单词造句称具体的一个画面，只生成画面描述，其他的不需要写：",
+      "input_type": "text",
+      "model_version": "gemini-2.0-flash-exp",
+      "operation_mode": "analysis",
+      "chat_mode": false,
+      "clear_history": false,
+      "Additional_Context": "生气",
+      "api_key": "AIzaSyD-xr1wEj95aYgr2VGIIgVfLyKpNiJAQA4",
+      "max_output_tokens": 8192,
+      "temperature": 0.4,
+      "structured_output": false,
+      "max_images": 6,
+      "batch_count": 1,
+      "seed": [
+        "29",
+        0
+      ]
+    },
+    "class_type": "GeminiFlash",
+    "_meta": {
+      "title": "Gemini Flash 2.0 Experimental"
+    }
+  },
+  "33": {
+    "inputs": {
+      "images": [
+        "32",
+        1
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "预览图像"
+    }
+  },
+  "34": {
+    "inputs": {
+      "text": [
+        "32",
+        0
+      ],
+      "PreviewTextNode_0": "他紧握双拳，指节因用力而发白，脖子上的青筋暴起，脸涨得通红，像一个即将爆发的火山。"
+    },
+    "class_type": "PreviewTextNode",
+    "_meta": {
+      "title": "Preview Text Node"
+    }
+  },
+  "37": {
+    "inputs": {
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImageWebsocket",
+    "_meta": {
+      "title": "保存图像（网络接口）"
+    }
+  }
+}
