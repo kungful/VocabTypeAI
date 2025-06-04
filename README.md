@@ -18,7 +18,7 @@
 ## 🚀 快速开始
 
 ### 1. 克隆仓库
-
+最好在linux系统运行，window测试发现延迟严重。待优化windows的适配
 ```bash
 git clone https://github.com/kungful/VocabTypeAI.git
 cd VocabTypeAI
