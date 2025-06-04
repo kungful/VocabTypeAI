@@ -1,3 +1,4 @@
 gradio
 websocket-client
 Pillow
+httpx[socks]
