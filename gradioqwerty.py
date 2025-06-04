@@ -240,7 +240,7 @@ async def _start_session_wrapper(desc, idx):
 
 # --- Gradio Interface Definition ---
 with gr.Blocks(theme=gr.themes.Soft()) as app:
-    gr.Markdown("# 单词学习器")
+    gr.Markdown("# 单词学习器 [给作者一颗星星](https://github.com/kungful/VocabTypeAI.git)")
 
     # Load dictionaries on startup
     loaded_dictionaries = load_dictionaries()
