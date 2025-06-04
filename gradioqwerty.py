@@ -240,7 +240,7 @@ async def _start_session_wrapper(desc, idx):
 
 # --- Gradio Interface Definition ---
 with gr.Blocks(theme=gr.themes.Soft()) as app:
-    gr.Markdown("# 单词学习器 [给作者一颗星星](https://github.com/kungful/VocabTypeAI.git)")
+
 
     # Load dictionaries on startup
     loaded_dictionaries = load_dictionaries()
@@ -259,14 +259,17 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
         with gr.Row():
             with gr.Column():
                 with gr.Row():
-                    dictionary_dropdown = gr.Dropdown(
-                        choices=display_dictionary_names, # Use translated names here
-                        label="选择词典（可以搜索）",
-                        value=initial_dropdown_value, # Use translated initial value
-                        interactive=True,
-                        filterable=True # Add search box to dropdown
-                    )
-                    start_button = gr.Button("开始学习")
+                    with gr.Column(scale=1):
+                        dictionary_dropdown = gr.Dropdown(
+                            choices=display_dictionary_names, # Use translated names here
+                            label="选择词典（可以搜索）",
+                            value=initial_dropdown_value, # Use translated initial value
+                            interactive=True,
+                            filterable=True # Add search box to dropdown
+                        )
+                    with gr.Column(scale=1):
+                        start_button = gr.Button("开始学习")
+                        gr.Markdown("## [给作者一颗星星](https://github.com/kungful/VocabTypeAI.git)")
         
                 with gr.Row():
                     # Initial max based on the first loaded dictionary's actual filename
@@ -309,15 +312,20 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
                 )
         
         
+
                 with gr.Row():
-                    wpm_display = gr.Textbox(label="速度", value="0.00 WPM", interactive=False)
-                    accuracy_display = gr.Textbox(label="准确率", value="0.00%", interactive=False)
+                    with gr.Column(scale=1):
+                        wpm_display = gr.Textbox(label="速度", value="0.00 WPM", interactive=False)
+                        accuracy_display = gr.Textbox(label="准确率", value="0.00%", interactive=False)
                     audio_player = gr.Audio(label="单词发音", autoplay=True, streaming=True) # Add audio player
+                
                     
         
                 with gr.Row(visible=False) as completion_buttons:
                     restart_button = gr.Button("重新学习当前词典")
                     next_dict_button = gr.Button("选择下一个词典")
+                outputs=[gr.Textbox(value="设置已保存！", interactive=False, visible=True)] # Provide a temporary status message
+
             with gr.Column():
                 image_display = gr.Image(label="单词图像", type="filepath", show_download_button=True, height=768, width=1024) # Add image display
                 regenerate_image_button = gr.Button("重新生成图像") # New button for regenerating image
@@ -431,7 +439,7 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
     save_comfyui_settings_button.click(
         fn=update_comfyui_settings,
         inputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input],
-        outputs=[gr.Textbox(value="设置已保存！", interactive=False, visible=True)] # Provide a temporary status message
+
     )
     
     # Initial update of ComfyUI settings on app load
