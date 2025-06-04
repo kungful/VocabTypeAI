@@ -78,7 +78,7 @@ python gradioqwerty.py
 
 
 ## ⚙️ ComfyUI 设置
-
+comfyui中的管理器的k采样器实时预览记得关闭
 在 Gradio 界面的 "ComfyUI 设置" 标签页中，您可以配置以下参数：
 
 *   **ComfyUI 服务器地址**：您的 ComfyUI 服务器运行的地址（例如 `127.0.0.1:8188` 或 `https://your-domain.com/comfyui`）。
