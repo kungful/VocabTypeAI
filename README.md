@@ -18,6 +18,7 @@
 ## 🚀 快速开始
 
 ### 1. 克隆仓库
+这是配制好的镜像[配置好的镜像](https://github.com/comfyanonymous/ComfyUI) ，启动好comfyui直接复制comfyui链接到这个软件的comfyui设置里粘贴即可
 最好在linux系统运行，window测试发现延迟严重。待优化windows的适配
 ```bash
 git clone https://github.com/kungful/VocabTypeAI.git
