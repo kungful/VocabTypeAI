@@ -1,0 +1,249 @@
+{
+  "3": {
+    "inputs": {
+      "seed": [
+        "29",
+        0
+      ],
+      "steps": 8,
+      "cfg": 8,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1,
+      "model": [
+        "25",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "K采样器"
+    }
+  },
+  "5": {
+    "inputs": {
+      "width": [
+        "24",
+        0
+      ],
+      "height": [
+        "24",
+        1
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "空Latent图像"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": [
+        "40",
+        0
+      ],
+      "clip": [
+        "25",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP文本编码"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": "low quality, worst quality，comics",
+      "clip": [
+        "25",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP文本编码"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "3",
+        0
+      ],
+      "vae": [
+        "25",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE解码"
+    }
+  },
+  "9": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "保存图像"
+    }
+  },
+  "24": {
+    "inputs": {
+      "custom_width": 1024,
+      "custom_height": 1024,
+      "name": "Hua_gradio_resolution"
+    },
+    "class_type": "Hua_gradio_resolution",
+    "_meta": {
+      "title": "📜hua_gradio分辨率"
+    }
+  },
+  "25": {
+    "inputs": {
+      "ckpt_name": "TAILANG XL TurboLcm（mini）mix V3.safetensors",
+      "name": "Hua_CheckpointLoaderSimple"
+    },
+    "class_type": "Hua_CheckpointLoaderSimple",
+    "_meta": {
+      "title": "🌊hua_gradio检查点加载器"
+    }
+  },
+  "29": {
+    "inputs": {
+      "seed": 1103645418049232,
+      "name": "Hua_gradio_Seed"
+    },
+    "class_type": "Hua_gradio_Seed",
+    "_meta": {
+      "title": "🧙hua_gradio随机种"
+    }
+  },
+  "32": {
+    "inputs": {
+      "prompt": "（英文输出）你是造句专家，将单词造句称具体的一个画面，只生成一个单纯的画面描述，其他的不需要写：",
+      "input_type": "text",
+      "model_version": "gemini-2.0-flash-exp",
+      "operation_mode": "analysis",
+      "chat_mode": false,
+      "clear_history": false,
+      "Additional_Context": "山",
+      "api_key": "AIzaSyD-xr1wEj95aYgr2VGIIgVfLyKpNiJAQA4",
+      "max_output_tokens": 8192,
+      "temperature": 0.4,
+      "structured_output": false,
+      "max_images": 6,
+      "batch_count": 1,
+      "seed": [
+        "29",
+        0
+      ]
+    },
+    "class_type": "GeminiFlash",
+    "_meta": {
+      "title": "Gemini Flash 2.0 Experimental"
+    }
+  },
+  "33": {
+    "inputs": {
+      "images": [
+        "32",
+        1
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "预览图像"
+    }
+  },
+  "34": {
+    "inputs": {
+      "text": [
+        "32",
+        0
+      ],
+      "PreviewTextNode_1": "A towering, snow-capped mountain peak pierces the clouds, its jagged silhouette stark against the pale blue sky."
+    },
+    "class_type": "PreviewTextNode",
+    "_meta": {
+      "title": "Preview Text Node"
+    }
+  },
+  "37": {
+    "inputs": {
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImageWebsocket",
+    "_meta": {
+      "title": "保存图像（网络接口）"
+    }
+  },
+  "40": {
+    "inputs": {
+      "string_1": [
+        "32",
+        0
+      ],
+      "string_2": [
+        "45",
+        0
+      ],
+      "string_3": "",
+      "string_4": "",
+      "string_5": "",
+      "string_6": "",
+      "string_7": "",
+      "string_8": "",
+      "delimiter": " "
+    },
+    "class_type": "List of strings [Crystools]",
+    "_meta": {
+      "title": "🪛 List of strings"
+    }
+  },
+  "43": {
+    "inputs": {
+      "text": [
+        "40",
+        0
+      ],
+      "PreviewTextNode_0": "A towering, snow-capped mountain peak pierces the clouds, its jagged silhouette stark against the pale blue sky.\n photograph , 50mm . cinematic 4k epic detailed 4k epic detailed photograph shot on kodak detailed cinematic hbo dark moody, 35mm photo, grainy, vignette, vintage, Kodachrome, Lomography, stained, highly detailed, found footage"
+    },
+    "class_type": "PreviewTextNode",
+    "_meta": {
+      "title": "Preview Text Node"
+    }
+  },
+  "45": {
+    "inputs": {
+      "styles": "fooocus_styles",
+      "select_styles": "Fooocus Enhance,Fooocus Photograph"
+    },
+    "class_type": "easy stylesSelector",
+    "_meta": {
+      "title": "风格提示词选择器"
+    }
+  }
+}
