@@ -1,0 +1,6 @@
+{
+    "server_address": "127.0.0.1:8188",
+    "workflow_file": "flux\u6587\u751f\u56fe_\u5355\u8bcd\u9020\u53e5\u56fe\u50cf.json",
+    "output_node_id": "",
+    "enable_image_inference": false
+}
