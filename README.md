@@ -1,3 +1,4 @@
+#更新了Windows的适配，现在已经流畅，后面增加音频提前异步请求前三个单词，就不会延迟了
 # 打字交互音画记忆单词 (Typing Interactive Audio-Visual Word Memorization)
 ## 📺 项目演示
 
