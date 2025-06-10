@@ -95,14 +95,15 @@ async def generate_image_for_word(
     selected_workflow_file: str,
     server_addr_input: str,
     image_output_node_id_from_ui: str,
-    force_regenerate: bool = False # New parameter
+    force_regenerate: bool = False,
+    allow_api_call: bool = True # New parameter to control API calls
 ):
     # Construct local image path
     sub_folder = os.path.join(IMAGE_OUTPUT_DIR, dictionary_name.replace(' ', '_'))
     sanitized_word = word_to_generate.replace(' ', '_').replace('/', '_')
     local_image_path = os.path.join(sub_folder, f"{sanitized_word}.png")
 
-    # Check if image exists locally, unless force_regenerate is True
+    # Always check if image exists locally, unless force_regenerate is True
     if not force_regenerate and os.path.exists(local_image_path):
         try:
             print(f"Found local image for '{word_to_generate}' at: {local_image_path}")
@@ -110,8 +111,13 @@ async def generate_image_for_word(
             return local_image_path, f"已从本地加载图像: {local_image_path}"
         except Exception as e:
             print(f"Error loading local image {local_image_path}: {e}")
-            # If local image fails to load, proceed to generate
-            pass # Continue to generation if local load fails
+            # If local image fails to load, proceed to generate (if allowed)
+            pass 
+
+    # If local image not found or force_regenerate is True, proceed to API call if allowed
+    if not allow_api_call:
+        print(f"Image generation API call skipped for '{word_to_generate}': API calls are disabled.")
+        return None, "图像推理已关闭，未从本地加载到图像。"
 
     if not selected_workflow_file:
         return None, "错误：请先选择一个工作流JSON文件。"
