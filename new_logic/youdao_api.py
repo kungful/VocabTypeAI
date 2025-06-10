@@ -18,6 +18,17 @@ AUDIO_OUTPUT_DIR = "generated_audio"
 
 async def test_youdao_api_with_audio(text, pronunciation, dictionary_name="default"):
     """测试有道发音API并返回音频URL，支持单词或句子，保存为wav格式"""
+    sub_folder = os.path.join(AUDIO_OUTPUT_DIR, dictionary_name.replace(' ', '_'))
+    sanitized_text = text.replace(' ', '_')  # 替换空格以适应文件名
+    audio_filename = f"{sanitized_text}_{pronunciation}.wav"
+    audio_path = os.path.join(sub_folder, audio_filename)
+
+    # 优先检查本地缓存
+    if os.path.exists(audio_path):
+        print(f"Found local audio for '{text}' at: {audio_path}")
+        return f"已从本地加载音频: {audio_path}", audio_path
+
+    # 如果本地不存在，则调用API
     url = generate_audio_url(text, pronunciation)
     if not url:
         return "无效的发音类型，请选择 'uk' 或 'us'。", None
@@ -26,18 +37,7 @@ async def test_youdao_api_with_audio(text, pronunciation, dictionary_name="defau
         async with httpx.AsyncClient() as client:
             response = await client.get(url)
             if response.status_code == 200 and response.headers['Content-Type'].startswith('audio'):
-                # 根据词典名字创建子文件夹
-                # 假设 dictionary_name 是词典的名字，用于创建子文件夹
-                # 如果没有提供词典名字，可以使用默认值或者根据text生成一个
-                sub_folder = os.path.join(AUDIO_OUTPUT_DIR, dictionary_name.replace(' ', '_'))
                 os.makedirs(sub_folder, exist_ok=True)
-
-                # 保存音频为wav格式
-                sanitized_text = text.replace(' ', '_')  # 替换空格以适应文件名
-                audio_filename = f"{sanitized_text}_{pronunciation}.wav"
-                audio_path = os.path.join(sub_folder, audio_filename)
-
-                # 使用 asyncio.to_thread 将阻塞的文件写入操作放到单独的线程中
                 await asyncio.to_thread(lambda: open(audio_path, 'wb').write(response.content))
                 return f"API 可用，音频文件已成功获取并保存为: {audio_path}", audio_path
             else:
