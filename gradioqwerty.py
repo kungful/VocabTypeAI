@@ -22,10 +22,34 @@ current_word_data = None # {name, trans, usphone, ukphone}
 start_time = 0
 typed_history = [] # To store (char, is_correct) for rich text display
 
-# ComfyUI Global Settings (will be updated via UI)
-comfyui_server_address = "127.0.0.1:8188"
-comfyui_workflow_file = AVAILABLE_WORKFLOW_FILES[0] if AVAILABLE_WORKFLOW_FILES else None
-comfyui_output_node_id = "" # Optional, auto-detect if empty
+# ComfyUI Global Settings (will be updated via UI and saved/loaded from file)
+COMFYUI_CONFIG_FILE = "comfyui_config.json"
+
+def load_comfyui_settings():
+    try:
+        if os.path.exists(COMFYUI_CONFIG_FILE):
+            with open(COMFYUI_CONFIG_FILE, "r", encoding="utf-8") as f:
+                settings = json.load(f)
+                print(f"Loaded ComfyUI settings: {settings}")
+                return settings
+    except Exception as e:
+        print(f"Error loading ComfyUI settings: {e}")
+    return {} # Return empty dict if loading fails or file doesn't exist
+
+def save_comfyui_settings(settings):
+    try:
+        with open(COMFYUI_CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(settings, f, indent=4)
+        print(f"Saved ComfyUI settings: {settings}")
+    except Exception as e:
+        print(f"Error saving ComfyUI settings: {e}")
+
+# Load initial settings
+initial_comfyui_settings = load_comfyui_settings()
+comfyui_server_address = initial_comfyui_settings.get("server_address", "127.0.0.1:8188")
+comfyui_workflow_file = initial_comfyui_settings.get("workflow_file", AVAILABLE_WORKFLOW_FILES[0] if AVAILABLE_WORKFLOW_FILES else None)
+comfyui_output_node_id = initial_comfyui_settings.get("output_node_id", "")
+enable_image_inference = initial_comfyui_settings.get("enable_image_inference", True) # New setting for image inference toggle
 
 # --- Helper Functions ---
 def load_dictionaries(data_dir="data"):
@@ -82,7 +106,7 @@ async def next_dict_handler(current_dict_description):
         return ("请选择一个词典。", "", "", "0.00 WPM", "0.00%", [], gr.update(visible=False), gr.update(maximum=0, value=0, visible=False), None, None) # Added None for image_output
 
 async def start_new_session(dictionary_filename, start_index=0):
-    global current_dictionary_name, current_words, current_word_index, start_time, typed_history, current_audio_path, current_image_path
+    global current_dictionary_name, current_words, current_word_index, start_time, typed_history, current_audio_path, current_image_path, enable_image_inference
 
     if dictionary_filename not in dictionaries:
         # Return 8 values (including audio_path), with empty strings for phonetic and translation, and hidden buttons
@@ -115,25 +139,22 @@ async def start_new_session(dictionary_filename, start_index=0):
         _, audio_file_path = await test_youdao_api_with_audio(word_data['name'], 'us', current_dictionary_name) # Default to US pronunciation
         current_audio_path = audio_file_path
 
-        # Trigger image generation immediately when a new word is displayed
-        if word_data and comfyui_workflow_file and comfyui_server_address:
-            print(f"Attempting to generate/load image for word: {word_data['name']} on word display.")
-            generated_image, image_status_message = await generate_image_for_word(
-                word_data['name'],
-                current_dictionary_name,
-                comfyui_workflow_file,
-                comfyui_server_address,
-                comfyui_output_node_id
-            )
-            if generated_image:
-                current_image_path = generated_image # Store the PIL Image object
-                print(f"Image display successful: {image_status_message}")
-            else:
-                current_image_path = None
-                print(f"Image display failed: {image_status_message}")
+        # Always call generate_image_for_word to allow local cache lookup
+        print(f"Attempting to generate/load image for word: {word_data['name']} on word display.")
+        generated_image, image_status_message = await generate_image_for_word(
+            word_data['name'],
+            current_dictionary_name,
+            comfyui_workflow_file,
+            comfyui_server_address,
+            comfyui_output_node_id,
+            allow_api_call=enable_image_inference # Pass the inference toggle state
+        )
+        if generated_image:
+            current_image_path = generated_image # Store the PIL Image object
+            print(f"Image display successful: {image_status_message}")
         else:
             current_image_path = None
-            print("Image generation/load skipped on word display: Missing word data, workflow file, or server address.")
+            print(f"Image display failed: {image_status_message}")
 
         # Return 8 values + slider update + audio path + image path
         return word_html_content, "", "", "0.00 WPM", "0.00%", initial_highlight, gr.update(visible=False), gr.update(maximum=len(current_words) - 1, value=start_index, visible=True), current_audio_path, current_image_path
@@ -144,7 +165,7 @@ async def start_new_session(dictionary_filename, start_index=0):
 
 async def process_typing(user_input_text):
     global current_word_data, start_time, current_word_index, current_words, current_audio_path, current_image_path, \
-           comfyui_server_address, comfyui_workflow_file, comfyui_output_node_id
+           comfyui_server_address, comfyui_workflow_file, comfyui_output_node_id, enable_image_inference
 
     # 调用新逻辑函数
     # process_typing_with_clear 返回 8 个值：
@@ -172,28 +193,24 @@ async def process_typing(user_input_text):
             current_audio_path = audio_file_path
             audio_output = current_audio_path
             
-            # Trigger image generation/load for the *new* word
-            if next_word_data and comfyui_workflow_file and comfyui_server_address:
-                print(f"Attempting to generate/load image for next word: {next_word_data['name']} on word completion.")
-                generated_image, image_status_message = await generate_image_for_word(
-                    next_word_data['name'],
-                    current_dictionary_name,
-                    comfyui_workflow_file,
-                    comfyui_server_address,
-                    comfyui_output_node_id
-                )
-                if generated_image:
-                    image_output = generated_image
-                    current_image_path = generated_image # Store the PIL Image object
-                    print(f"Image display successful for next word: {image_status_message}")
-                else:
-                    image_output = None
-                    current_image_path = None
-                    print(f"Image display failed for next word: {image_status_message}")
+            # Always call generate_image_for_word for the *new* word to allow local cache lookup
+            print(f"Attempting to generate/load image for next word: {next_word_data['name']} on word completion.")
+            generated_image, image_status_message = await generate_image_for_word(
+                next_word_data['name'],
+                current_dictionary_name,
+                comfyui_workflow_file,
+                comfyui_server_address,
+                comfyui_output_node_id,
+                allow_api_call=enable_image_inference # Pass the inference toggle state
+            )
+            if generated_image:
+                image_output = generated_image
+                current_image_path = generated_image # Store the PIL Image object
+                print(f"Image display successful for next word: {image_status_message}")
             else:
                 image_output = None
                 current_image_path = None
-                print("Image generation/load skipped for next word: Missing word data, workflow file, or server address.")
+                print(f"Image display failed for next word: {image_status_message}")
 
         else:
             # 词典完成
@@ -209,20 +226,25 @@ async def process_typing(user_input_text):
     # Return 9 values + slider update + audio path + image output
     return word_html_content, phonetic_display_hidden, translation_display_hidden, wpm_val, accuracy_val, highlight_data, completion_buttons_visibility, clear_input_value, gr.update(value=current_word_index), audio_output, image_output
 
-async def regenerate_image_handler():
-    global current_word_data, current_dictionary_name, comfyui_workflow_file, comfyui_server_address, comfyui_output_node_id, current_image_path
+async def regenerate_image_handler(enable_inference_checkbox_state):
+    global current_word_data, current_dictionary_name, comfyui_workflow_file, comfyui_server_address, comfyui_output_node_id, current_image_path, enable_image_inference
     
+    # Update global enable_image_inference based on the checkbox state
+    enable_image_inference = enable_inference_checkbox_state
+
     if not current_word_data:
         return None, "请先开始一个学习会话。" # No word to generate image for
 
     print(f"Attempting to regenerate image for word: {current_word_data['name']}")
+    # For regenerate, we always want to allow API call and force regenerate
     generated_image, image_status_message = await generate_image_for_word(
         current_word_data['name'],
         current_dictionary_name,
         comfyui_workflow_file,
         comfyui_server_address,
         comfyui_output_node_id,
-        force_regenerate=True # Force regeneration
+        force_regenerate=True, # Force regeneration
+        allow_api_call=True # Always allow API call for explicit regeneration
     )
     if generated_image:
         current_image_path = generated_image
@@ -245,7 +267,7 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
     # Load dictionaries on startup
     loaded_dictionaries = load_dictionaries()
     # Get translated names for display
-    display_dictionary_names = get_translated_dictionary_names(list(loaded_dictionaries.keys()), dictionary_metadata)
+    display_dictionary_names = get_translated_dictionary_names(list(dictionaries.keys()), dictionary_metadata)
     
     # Determine initial value for dropdown
     initial_dropdown_value = None
@@ -283,6 +305,13 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
                         interactive=True,
                         visible=True if display_dictionary_names else False # Initially visible if dictionaries exist
                     )
+                
+                # Add the image inference checkbox here, inside the "单词学习" tab
+                image_inference_checkbox = gr.Checkbox(
+                    label="是否开启图像推理",
+                    value=enable_image_inference, # Set initial value from loaded settings
+                    interactive=True
+                )
         
                 with gr.Column():
                     # Combined display for word, phonetic, and translation
@@ -335,18 +364,18 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
         )
         comfyui_server_address_input = gr.Textbox(
             label="ComfyUI 服务器地址", 
-            value="127.0.0.1:8188", 
+            value=comfyui_server_address, # Set initial value from loaded settings
             placeholder="例如: 127.0.0.1:8188 或 https://your-domain.com/comfyui"
         )
         comfyui_workflow_file_dropdown = gr.Dropdown(
             label="选择工作流 JSON 文件",
             choices=AVAILABLE_WORKFLOW_FILES,
-            value=AVAILABLE_WORKFLOW_FILES[0] if AVAILABLE_WORKFLOW_FILES else None,
+            value=comfyui_workflow_file, # Set initial value from loaded settings
             interactive=True
         )
         comfyui_output_node_id_input = gr.Textbox(
             label="SaveImageWebsocket 节点ID (可选)",
-            value="",
+            value=comfyui_output_node_id, # Set initial value from loaded settings
             placeholder="留空则自动检测, 或指定特定ID (如 '16')"
         )
         # Button to save settings (optional, can also update on change)
@@ -405,46 +434,60 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
     )
 
     # ComfyUI settings update handlers
-    def update_comfyui_settings(server_addr, workflow_file, output_node_id):
-        global comfyui_server_address, comfyui_workflow_file, comfyui_output_node_id
+    def update_comfyui_settings(server_addr, workflow_file, output_node_id, enable_inference):
+        global comfyui_server_address, comfyui_workflow_file, comfyui_output_node_id, enable_image_inference
         comfyui_server_address = server_addr
         comfyui_workflow_file = workflow_file
         comfyui_output_node_id = output_node_id
-        print(f"ComfyUI settings updated: Server={comfyui_server_address}, Workflow={comfyui_workflow_file}, Node ID={comfyui_output_node_id}")
+        enable_image_inference = enable_inference # Update the global variable
+
+        settings_to_save = {
+            "server_address": comfyui_server_address,
+            "workflow_file": comfyui_workflow_file,
+            "output_node_id": comfyui_output_node_id,
+            "enable_image_inference": enable_image_inference # Save the new setting
+        }
+        save_comfyui_settings(settings_to_save)
+        print(f"ComfyUI settings updated: Server={comfyui_server_address}, Workflow={comfyui_workflow_file}, Node ID={comfyui_output_node_id}, Inference Enabled={enable_image_inference}")
         return "设置已保存！"
 
     comfyui_server_address_input.change(
         fn=update_comfyui_settings,
-        inputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input],
+        inputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input, image_inference_checkbox],
         outputs=[] # No direct output, just update global state
     )
     comfyui_workflow_file_dropdown.change(
         fn=update_comfyui_settings,
-        inputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input],
+        inputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input, image_inference_checkbox],
         outputs=[]
     )
     comfyui_output_node_id_input.change(
         fn=update_comfyui_settings,
-        inputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input],
+        inputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input, image_inference_checkbox],
+        outputs=[]
+    )
+    image_inference_checkbox.change( # New event for the checkbox
+        fn=update_comfyui_settings,
+        inputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input, image_inference_checkbox],
         outputs=[]
     )
     save_comfyui_settings_button.click(
         fn=update_comfyui_settings,
-        inputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input],
+        inputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input, image_inference_checkbox],
         outputs=[gr.Textbox(value="设置已保存！", interactive=False, visible=True)] # Provide a temporary status message
     )
     
     # Initial update of ComfyUI settings on app load
     app.load(
-        fn=lambda: (comfyui_server_address, comfyui_workflow_file, comfyui_output_node_id),
-        outputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input],
+        fn=lambda: (comfyui_server_address, comfyui_workflow_file, comfyui_output_node_id, enable_image_inference),
+        outputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input, image_inference_checkbox],
         queue=False
     )
 
     # New event: Regenerate image button click
     regenerate_image_button.click(
         fn=regenerate_image_handler,
-        inputs=[], # No direct inputs needed from UI components for this handler
+        inputs=[image_inference_checkbox], # Pass the checkbox state to the handler
         outputs=[image_display, image_status_message_display] # Update the image display and status message
     )
 
