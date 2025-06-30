@@ -255,6 +255,52 @@ async def regenerate_image_handler(enable_inference_checkbox_state):
         print(f"Image regeneration failed: {image_status_message}")
         return None, image_status_message
 
+async def auto_preload_resources_handler(dictionary_description, enable_inference_checkbox_state, progress=gr.Progress(track_tqdm=True)):
+    """
+    Iterates through all words in the selected dictionary and ensures
+    local audio and image files exist, generating them if they don't.
+    """
+    dictionary_filename = filename_to_description_map.get(dictionary_description)
+    if not dictionary_filename or dictionary_filename not in dictionaries:
+        yield "错误：无效的词典选择。"
+        return
+
+    words_to_process = dictionaries[dictionary_filename]
+    total_words = len(words_to_process)
+    yield f"开始处理词典 '{dictionary_description}'，共 {total_words} 个单词..."
+
+    for i, word_data in enumerate(progress.tqdm(words_to_process, desc=f"预加载 {dictionary_description}")):
+        word_name = word_data.get("name")
+        if not word_name:
+            continue
+
+        # --- Process Audio ---
+        try:
+            audio_msg, _ = await test_youdao_api_with_audio(word_name, 'us', dictionary_filename)
+            print(f"Audio status for '{word_name}': {audio_msg}")
+        except Exception as e:
+            print(f"Error processing audio for '{word_name}': {e}")
+
+        # --- Process Image ---
+        try:
+            # We use the global comfyui settings for the preload
+            image_msg, _ = await generate_image_for_word(
+                word_name,
+                dictionary_filename,
+                comfyui_workflow_file,
+                comfyui_server_address,
+                comfyui_output_node_id,
+                allow_api_call=enable_inference_checkbox_state # Use the state from the UI
+            )
+            print(f"Image status for '{word_name}': {image_msg}")
+        except Exception as e:
+            print(f"Error processing image for '{word_name}': {e}")
+        
+        yield f"进度: {i + 1}/{total_words} | 当前处理: {word_name}"
+
+    yield f"词典 '{dictionary_description}' 中的所有 {total_words} 个单词资源已处理完毕！"
+
+
 # Helper async function for Gradio events
 async def _start_session_wrapper(desc, idx):
     filename = filename_to_description_map.get(desc, desc)
@@ -288,8 +334,13 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
                         interactive=True,
                         filterable=True # Add search box to dropdown
                     )
-                    start_button = gr.Button("开始学习")
+                    with gr.Column():
+                        start_button = gr.Button("开始学习")
+                        preload_button = gr.Button("自动预加载资源", variant="secondary") # New preload button
         
+                with gr.Row():
+                    preload_status_display = gr.Label(label="预加载状态", value="点击“自动预加载资源”开始。", visible=True) # New status display
+
                 with gr.Row():
                     # Initial max based on the first loaded dictionary's actual filename
                     initial_max_slider = 0
@@ -339,9 +390,11 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
         
         
                 with gr.Row():
-                    wpm_display = gr.Textbox(label="速度", value="0.00 WPM", interactive=False)
-                    accuracy_display = gr.Textbox(label="准确率", value="0.00%", interactive=False)
-                    audio_player = gr.Audio(label="单词发音", autoplay=True, streaming=True) # Add audio player
+                    with gr.Column():
+                        wpm_display = gr.Textbox(label="速度", value="0.00 WPM", interactive=False)
+                        accuracy_display = gr.Textbox(label="准确率", value="0.00%", interactive=False)
+                    with gr.Row():
+                        audio_player = gr.Audio(label="单词发音", autoplay=True, streaming=True) # Add audio player
                     
         
                 with gr.Row(visible=False) as completion_buttons:
@@ -489,6 +542,13 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
         fn=regenerate_image_handler,
         inputs=[image_inference_checkbox], # Pass the checkbox state to the handler
         outputs=[image_display, image_status_message_display] # Update the image display and status message
+    )
+
+    # New event: Preload resources button click
+    preload_button.click(
+        fn=auto_preload_resources_handler,
+        inputs=[dictionary_dropdown, image_inference_checkbox],
+        outputs=[preload_status_display]
     )
 
 
