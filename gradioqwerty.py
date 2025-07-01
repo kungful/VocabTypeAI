@@ -306,8 +306,30 @@ async def _start_session_wrapper(desc, idx):
     filename = filename_to_description_map.get(desc, desc)
     return await start_new_session(filename, idx)
 
+# --- Custom CSS for Overlay ---
+css = """
+#image-container {
+    position: relative;
+}
+#word-overlay {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    z-index: 10;
+    color: white;
+    pointer-events: none;
+    text-shadow: 0 0 8px #000, 0 0 8px #000, 0 0 8px #000;
+}
+#word-overlay .dark { color: white !important; }
+#word-overlay div { text-align: center !important; }
+#word-overlay h1 { font-size: 4em !important; font-weight: bold !important; margin: 0; padding: 0; }
+#word-overlay p { font-size: 1.5em !important; margin-top: 10px !important; }
+"""
+
 # --- Gradio Interface Definition ---
-with gr.Blocks(theme=gr.themes.Soft()) as app:
+with gr.Blocks(theme=gr.themes.Soft(), css=css) as app:
     gr.Markdown("# 单词学习器 [给作者一颗星星](https://github.com/kungful/VocabTypeAI.git)")
 
     # Load dictionaries on startup
@@ -365,16 +387,6 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
                 )
         
                 with gr.Column():
-                    # Combined display for word, phonetic, and translation
-                    word_and_details_display = gr.HTML(
-                        value="<div style='font-size: 4em; text-align: center; font-weight: bold;'></div>",
-                        label="单词 / 音标 / 中文意思"
-                    )
-                    # These components are now redundant for display but kept for output consistency
-                    phonetic_display_hidden = gr.HTML(visible=False)
-                    translation_display_hidden = gr.Textbox(visible=False)
-        
-        
                     user_input = gr.Textbox(
                         label="在此输入单词",
                         lines=1,
@@ -400,10 +412,21 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
                 with gr.Row(visible=False) as completion_buttons:
                     restart_button = gr.Button("重新学习当前词典")
                     next_dict_button = gr.Button("选择下一个词典")
-            with gr.Column():
-                image_display = gr.Image(label="单词图像", type="filepath", show_download_button=True, height=768, width=1024) # Add image display
-                regenerate_image_button = gr.Button("重新生成图像") # New button for regenerating image
-                image_status_message_display = gr.Textbox(label="图像生成状态", interactive=False, value="") # New textbox for status messages
+
+            with gr.Column(elem_id="image-container"): # Apply the container ID for CSS
+                image_display = gr.Image(label="单词图像", type="filepath", show_download_button=True, height=768, width=1024)
+                # This HTML component will now be the overlay
+                word_and_details_display = gr.HTML(
+                    value="",
+                    elem_id="word-overlay" # Apply the overlay ID for CSS
+                )
+                # These components are now redundant for display but kept for output consistency
+                phonetic_display_hidden = gr.HTML(visible=False)
+                translation_display_hidden = gr.Textbox(visible=False)
+                
+                with gr.Row(): # Place buttons below the image container
+                    regenerate_image_button = gr.Button("重新生成图像")
+                    image_status_message_display = gr.Textbox(label="图像生成状态", interactive=False, value="")
         
 
     with gr.Tab("ComfyUI 设置"): # New tab for ComfyUI settings
