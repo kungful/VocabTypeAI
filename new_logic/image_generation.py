@@ -195,6 +195,20 @@ async def generate_image_for_word(
     else:
         print("Warning: No 'GeminiFlash' node found in the workflow. 'Additional_Context' from UI not applied.")
 
+    # Modify DeepseekNode with the word
+    deepseek_node_id = None
+    for node_id, node_data in prompt.items():
+        if node_data.get("class_type") == "DeepseekNode":
+            deepseek_node_id = node_id
+            break # Found the first one
+
+    if deepseek_node_id:
+        if "inputs" in prompt[deepseek_node_id] and "prompt" in prompt[deepseek_node_id]["inputs"]:
+            prompt[deepseek_node_id]["inputs"]["prompt"] = word_to_generate
+            print(f"Applied 'prompt': '{word_to_generate}' to DeepseekNode node '{deepseek_node_id}'")
+        else:
+            print(f"Warning: DeepseekNode node '{deepseek_node_id}' found, but 'prompt' input not present or 'inputs' field missing.")
+
     # --- MODIFIED SECTION FOR Hua_gradio_Seed ---
     found_hua_seed_node_id = None
     for node_id_iter, node_data_iter in prompt.items():
