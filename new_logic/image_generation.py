@@ -96,7 +96,8 @@ async def generate_image_for_word(
     server_addr_input: str,
     image_output_node_id_from_ui: str,
     force_regenerate: bool = False,
-    allow_api_call: bool = True # New parameter to control API calls
+    allow_api_call: bool = True, # New parameter to control API calls
+    deepseek_api_key: str = None # Add deepseek_api_key parameter
 ):
     # Construct local image path
     sub_folder = os.path.join(IMAGE_OUTPUT_DIR, dictionary_name.replace(' ', '_'))
@@ -203,11 +204,24 @@ async def generate_image_for_word(
             break # Found the first one
 
     if deepseek_node_id:
-        if "inputs" in prompt[deepseek_node_id] and "prompt" in prompt[deepseek_node_id]["inputs"]:
-            prompt[deepseek_node_id]["inputs"]["prompt"] = word_to_generate
-            print(f"Applied 'prompt': '{word_to_generate}' to DeepseekNode node '{deepseek_node_id}'")
+        if "inputs" in prompt[deepseek_node_id]:
+            # Apply the prompt (word)
+            if "prompt" in prompt[deepseek_node_id]["inputs"]:
+                prompt[deepseek_node_id]["inputs"]["prompt"] = word_to_generate
+                print(f"Applied 'prompt': '{word_to_generate}' to DeepseekNode node '{deepseek_node_id}'")
+            else:
+                print(f"Warning: DeepseekNode node '{deepseek_node_id}' found, but 'prompt' input not present.")
+
+            # Apply the API key if provided
+            if deepseek_api_key and "api_key" in prompt[deepseek_node_id]["inputs"]:
+                prompt[deepseek_node_id]["inputs"]["api_key"] = deepseek_api_key
+                print(f"Applied provided API Key to DeepseekNode node '{deepseek_node_id}'.")
+            elif "api_key" in prompt[deepseek_node_id]["inputs"]:
+                 print(f"Info: DeepseekNode node '{deepseek_node_id}' has 'api_key' input, but no key was provided from UI. Using workflow's default.")
+            else:
+                print(f"Warning: DeepseekNode node '{deepseek_node_id}' does not have an 'api_key' input field.")
         else:
-            print(f"Warning: DeepseekNode node '{deepseek_node_id}' found, but 'prompt' input not present or 'inputs' field missing.")
+            print(f"Warning: DeepseekNode node '{deepseek_node_id}' found, but its 'inputs' field is missing.")
 
     # --- MODIFIED SECTION FOR Hua_gradio_Seed ---
     found_hua_seed_node_id = None
