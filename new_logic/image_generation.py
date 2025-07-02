@@ -97,7 +97,8 @@ async def generate_image_for_word(
     image_output_node_id_from_ui: str,
     force_regenerate: bool = False,
     allow_api_call: bool = True, # New parameter to control API calls
-    deepseek_api_key: str = None # Add deepseek_api_key parameter
+    deepseek_api_key: str = None, # Add deepseek_api_key parameter
+    deepseek_system_prompt: str = None # Add system_prompt parameter
 ):
     # Construct local image path
     sub_folder = os.path.join(IMAGE_OUTPUT_DIR, dictionary_name.replace(' ', '_'))
@@ -220,6 +221,15 @@ async def generate_image_for_word(
                  print(f"Info: DeepseekNode node '{deepseek_node_id}' has 'api_key' input, but no key was provided from UI. Using workflow's default.")
             else:
                 print(f"Warning: DeepseekNode node '{deepseek_node_id}' does not have an 'api_key' input field.")
+
+            # Apply the system prompt if provided
+            if deepseek_system_prompt and "system_prompt" in prompt[deepseek_node_id]["inputs"]:
+                prompt[deepseek_node_id]["inputs"]["system_prompt"] = deepseek_system_prompt
+                print(f"Applied provided System Prompt to DeepseekNode node '{deepseek_node_id}'.")
+            elif "system_prompt" in prompt[deepseek_node_id]["inputs"]:
+                print(f"Info: DeepseekNode node '{deepseek_node_id}' has 'system_prompt' input, but no custom prompt was provided from UI. Using workflow's default.")
+            else:
+                print(f"Warning: DeepseekNode node '{deepseek_node_id}' does not have a 'system_prompt' input field.")
         else:
             print(f"Warning: DeepseekNode node '{deepseek_node_id}' found, but its 'inputs' field is missing.")
 
