@@ -1,0 +1,182 @@
+{
+  "3": {
+    "inputs": {
+      "seed": [
+        "29",
+        0
+      ],
+      "steps": 20,
+      "cfg": 8,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1,
+      "model": [
+        "25",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "K采样器"
+    }
+  },
+  "5": {
+    "inputs": {
+      "width": [
+        "24",
+        0
+      ],
+      "height": [
+        "24",
+        1
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "空Latent图像"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": [
+        "41",
+        0
+      ],
+      "clip": [
+        "25",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP文本编码"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": "Ugly, embarrassing",
+      "clip": [
+        "25",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP文本编码"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "3",
+        0
+      ],
+      "vae": [
+        "25",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE解码"
+    }
+  },
+  "9": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "保存图像"
+    }
+  },
+  "24": {
+    "inputs": {
+      "custom_width": 1024,
+      "custom_height": 1024,
+      "name": "Hua_gradio_resolution"
+    },
+    "class_type": "Hua_gradio_resolution",
+    "_meta": {
+      "title": "📜hua_gradio分辨率"
+    }
+  },
+  "25": {
+    "inputs": {
+      "ckpt_name": "juggernautXL_v8Rundiffusion.safetensors",
+      "name": "Hua_CheckpointLoaderSimple"
+    },
+    "class_type": "Hua_CheckpointLoaderSimple",
+    "_meta": {
+      "title": "🌊hua_gradio检查点加载器"
+    }
+  },
+  "29": {
+    "inputs": {
+      "seed": 283489324395365,
+      "name": "Hua_gradio_Seed"
+    },
+    "class_type": "Hua_gradio_Seed",
+    "_meta": {
+      "title": "🧙hua_gradio随机种"
+    }
+  },
+  "34": {
+    "inputs": {
+      "text": [
+        "41",
+        0
+      ],
+      "PreviewTextNode_0": "A golden retriever puppy with floppy ears bounds across a sunlit meadow, its pink tongue lolling happily as it chases a bright blue butterfly. The tall grass sways around its small paws, and dandelion seeds float through the air like tiny parachutes."
+    },
+    "class_type": "PreviewTextNode",
+    "_meta": {
+      "title": "Preview Text Node"
+    }
+  },
+  "37": {
+    "inputs": {
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImageWebsocket",
+    "_meta": {
+      "title": "保存图像（网络接口）"
+    }
+  },
+  "41": {
+    "inputs": {
+      "api_key": "",
+      "prompt": "dog",
+      "system_prompt": "（英文回答我）你是造句专家，将单词造句成为具体的一个分镜即一个画面，只生成画面描述，其他的不需要写：",
+      "seed": [
+        "29",
+        0
+      ],
+      "temperature": 0.7
+    },
+    "class_type": "DeepseekNode",
+    "_meta": {
+      "title": "✨ Deepseek chat (Hua)"
+    }
+  }
+}
