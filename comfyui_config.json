@@ -2,5 +2,6 @@
     "server_address": "127.0.0.1:8188",
     "workflow_file": "flux\u6587\u751f\u56fe_deepseek\u9020\u53e5.json",
     "output_node_id": "",
-    "enable_image_inference": false
+    "enable_image_inference": true,
+    "deepseek_api_key": ""
 }
