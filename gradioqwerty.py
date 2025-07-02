@@ -446,7 +446,7 @@ with gr.Blocks(theme=gr.themes.Soft(), css=css) as app:
     with gr.Tab("ComfyUI 设置"): # New tab for ComfyUI settings
         gr.Markdown("### ComfyUI 图像生成参数设置")
         gr.Markdown(
-            "**[作者制作好的ComfyUI镜像](https://www.xiangongyun.com/image/detail/7b36c1a3-da41-4676-b5b3-03ec25d6e197)** | **[点击此处获取Deepseek API密钥](httpshttps://platform.deepseek.com/api_keys)**"
+            "**[作者制作好的ComfyUI镜像](https://www.xiangongyun.com/image/detail/7b36c1a3-da41-4676-b5b3-03ec25d6e197)** | **[点击此处获取Deepseek API密钥](https://platform.deepseek.com/api_keys)**"
         )
         gr.Markdown(
             "**确保**: \n"
