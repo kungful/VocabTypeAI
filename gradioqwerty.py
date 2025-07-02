@@ -25,6 +25,15 @@ typed_history = [] # To store (char, is_correct) for rich text display
 # ComfyUI Global Settings (will be updated via UI and saved/loaded from file)
 COMFYUI_CONFIG_FILE = "comfyui_config.json"
 
+# --- Gradio UI Component ---
+# Add a new Textbox for the Deepseek API key
+deepseek_api_key_input = gr.Textbox(
+    label="Deepseek API 密钥",
+    type="password",
+    placeholder="在此输入您的 Deepseek API 密钥 (例如 sk-...)",
+    interactive=True
+)
+
 def load_comfyui_settings():
     try:
         if os.path.exists(COMFYUI_CONFIG_FILE):
@@ -50,6 +59,7 @@ comfyui_server_address = initial_comfyui_settings.get("server_address", "127.0.0
 comfyui_workflow_file = initial_comfyui_settings.get("workflow_file", AVAILABLE_WORKFLOW_FILES[0] if AVAILABLE_WORKFLOW_FILES else None)
 comfyui_output_node_id = initial_comfyui_settings.get("output_node_id", "")
 enable_image_inference = initial_comfyui_settings.get("enable_image_inference", True) # New setting for image inference toggle
+deepseek_api_key = initial_comfyui_settings.get("deepseek_api_key", "") # Load the new key
 
 # --- Helper Functions ---
 def load_dictionaries(data_dir="data"):
@@ -106,7 +116,7 @@ async def next_dict_handler(current_dict_description):
         return ("请选择一个词典。", "", "", "0.00 WPM", "0.00%", [], gr.update(visible=False), gr.update(maximum=0, value=0, visible=False), None, None) # Added None for image_output
 
 async def start_new_session(dictionary_filename, start_index=0):
-    global current_dictionary_name, current_words, current_word_index, start_time, typed_history, current_audio_path, current_image_path, enable_image_inference
+    global current_dictionary_name, current_words, current_word_index, start_time, typed_history, current_audio_path, current_image_path, enable_image_inference, deepseek_api_key
 
     if dictionary_filename not in dictionaries:
         # Return 8 values (including audio_path), with empty strings for phonetic and translation, and hidden buttons
@@ -142,12 +152,13 @@ async def start_new_session(dictionary_filename, start_index=0):
         # Always call generate_image_for_word to allow local cache lookup
         print(f"Attempting to generate/load image for word: {word_data['name']} on word display.")
         generated_image, image_status_message = await generate_image_for_word(
-            word_data['name'],
-            current_dictionary_name,
-            comfyui_workflow_file,
-            comfyui_server_address,
-            comfyui_output_node_id,
-            allow_api_call=enable_image_inference # Pass the inference toggle state
+            word_to_generate=word_data['name'],
+            dictionary_name=current_dictionary_name,
+            selected_workflow_file=comfyui_workflow_file,
+            server_addr_input=comfyui_server_address,
+            image_output_node_id_from_ui=comfyui_output_node_id,
+            allow_api_call=enable_image_inference, # Pass the inference toggle state
+            deepseek_api_key=deepseek_api_key # Pass the API key
         )
         if generated_image:
             current_image_path = generated_image # Store the PIL Image object
@@ -165,7 +176,7 @@ async def start_new_session(dictionary_filename, start_index=0):
 
 async def process_typing(user_input_text):
     global current_word_data, start_time, current_word_index, current_words, current_audio_path, current_image_path, \
-           comfyui_server_address, comfyui_workflow_file, comfyui_output_node_id, enable_image_inference
+           comfyui_server_address, comfyui_workflow_file, comfyui_output_node_id, enable_image_inference, deepseek_api_key
 
     # 调用新逻辑函数
     # process_typing_with_clear 返回 8 个值：
@@ -196,12 +207,13 @@ async def process_typing(user_input_text):
             # Always call generate_image_for_word for the *new* word to allow local cache lookup
             print(f"Attempting to generate/load image for next word: {next_word_data['name']} on word completion.")
             generated_image, image_status_message = await generate_image_for_word(
-                next_word_data['name'],
-                current_dictionary_name,
-                comfyui_workflow_file,
-                comfyui_server_address,
-                comfyui_output_node_id,
-                allow_api_call=enable_image_inference # Pass the inference toggle state
+                word_to_generate=next_word_data['name'],
+                dictionary_name=current_dictionary_name,
+                selected_workflow_file=comfyui_workflow_file,
+                server_addr_input=comfyui_server_address,
+                image_output_node_id_from_ui=comfyui_output_node_id,
+                allow_api_call=enable_image_inference, # Pass the inference toggle state
+                deepseek_api_key=deepseek_api_key # Pass the API key
             )
             if generated_image:
                 image_output = generated_image
@@ -227,7 +239,7 @@ async def process_typing(user_input_text):
     return word_html_content, phonetic_display_hidden, translation_display_hidden, wpm_val, accuracy_val, highlight_data, completion_buttons_visibility, clear_input_value, gr.update(value=current_word_index), audio_output, image_output
 
 async def regenerate_image_handler(enable_inference_checkbox_state):
-    global current_word_data, current_dictionary_name, comfyui_workflow_file, comfyui_server_address, comfyui_output_node_id, current_image_path, enable_image_inference
+    global current_word_data, current_dictionary_name, comfyui_workflow_file, comfyui_server_address, comfyui_output_node_id, current_image_path, enable_image_inference, deepseek_api_key
     
     # Update global enable_image_inference based on the checkbox state
     enable_image_inference = enable_inference_checkbox_state
@@ -238,13 +250,14 @@ async def regenerate_image_handler(enable_inference_checkbox_state):
     print(f"Attempting to regenerate image for word: {current_word_data['name']}")
     # For regenerate, we always want to allow API call and force regenerate
     generated_image, image_status_message = await generate_image_for_word(
-        current_word_data['name'],
-        current_dictionary_name,
-        comfyui_workflow_file,
-        comfyui_server_address,
-        comfyui_output_node_id,
+        word_to_generate=current_word_data['name'],
+        dictionary_name=current_dictionary_name,
+        selected_workflow_file=comfyui_workflow_file,
+        server_addr_input=comfyui_server_address,
+        image_output_node_id_from_ui=comfyui_output_node_id,
         force_regenerate=True, # Force regeneration
-        allow_api_call=True # Always allow API call for explicit regeneration
+        allow_api_call=True, # Always allow API call for explicit regeneration
+        deepseek_api_key=deepseek_api_key # Pass the API key
     )
     if generated_image:
         current_image_path = generated_image
@@ -285,12 +298,13 @@ async def auto_preload_resources_handler(dictionary_description, enable_inferenc
         try:
             # We use the global comfyui settings for the preload
             image_msg, _ = await generate_image_for_word(
-                word_name,
-                dictionary_filename,
-                comfyui_workflow_file,
-                comfyui_server_address,
-                comfyui_output_node_id,
-                allow_api_call=enable_inference_checkbox_state # Use the state from the UI
+                word_to_generate=word_name,
+                dictionary_name=dictionary_filename,
+                selected_workflow_file=comfyui_workflow_file,
+                server_addr_input=comfyui_server_address,
+                image_output_node_id_from_ui=comfyui_output_node_id,
+                allow_api_call=enable_inference_checkbox_state, # Use the state from the UI
+                deepseek_api_key=deepseek_api_key # Pass the API key
             )
             print(f"Image status for '{word_name}': {image_msg}")
         except Exception as e:
@@ -433,13 +447,20 @@ with gr.Blocks(theme=gr.themes.Soft(), css=css) as app:
         gr.Markdown("### ComfyUI 图像生成参数设置")
         gr.Markdown(
             "**确保**: \n"
-            "1. 选定的JSON工作流包含一个 `GeminiFlash` 节点 (用于 'Additional Context')。\n"
+            "1. 选定的JSON工作流包含一个 `GeminiFlash或者DeepseekNode` 节点 (用于 'Additional Context')。\n"
             "2. 如果工作流包含 `Hua_gradio_Seed` 节点, **脚本将自动为其填入随机种子**。\n"
             "3. 工作流中必须包含至少一个 `SaveImageWebsocket` 类型的节点，用于通过WebSocket输出图像。\n"
             "4. ComfyUI 服务器地址可以是 `127.0.0.1:8188`，也可以是完整的URL，如 `https://your-domain.com/comfyui-path`。"
         )
+        deepseek_api_key_input = gr.Textbox(
+            label="Deepseek API 密钥",
+            type="password",
+            value=deepseek_api_key, # Set initial value
+            placeholder="在此输入您的 Deepseek API 密钥 (例如 sk-...)",
+            interactive=True
+        )
         comfyui_server_address_input = gr.Textbox(
-            label="ComfyUI 服务器地址", 
+            label="ComfyUI 服务器地址",
             value=comfyui_server_address, # Set initial value from loaded settings
             placeholder="例如: 127.0.0.1:8188 或 https://your-domain.com/comfyui"
         )
@@ -510,53 +531,52 @@ with gr.Blocks(theme=gr.themes.Soft(), css=css) as app:
     )
 
     # ComfyUI settings update handlers
-    def update_comfyui_settings(server_addr, workflow_file, output_node_id, enable_inference):
-        global comfyui_server_address, comfyui_workflow_file, comfyui_output_node_id, enable_image_inference
+    def update_comfyui_settings(server_addr, workflow_file, output_node_id, enable_inference, api_key):
+        global comfyui_server_address, comfyui_workflow_file, comfyui_output_node_id, enable_image_inference, deepseek_api_key
         comfyui_server_address = server_addr
         comfyui_workflow_file = workflow_file
         comfyui_output_node_id = output_node_id
-        enable_image_inference = enable_inference # Update the global variable
+        enable_image_inference = enable_inference
+        deepseek_api_key = api_key # Update global key
 
         settings_to_save = {
             "server_address": comfyui_server_address,
             "workflow_file": comfyui_workflow_file,
             "output_node_id": comfyui_output_node_id,
-            "enable_image_inference": enable_image_inference # Save the new setting
+            "enable_image_inference": enable_image_inference,
+            "deepseek_api_key": deepseek_api_key # Save the new key
         }
         save_comfyui_settings(settings_to_save)
-        print(f"ComfyUI settings updated: Server={comfyui_server_address}, Workflow={comfyui_workflow_file}, Node ID={comfyui_output_node_id}, Inference Enabled={enable_image_inference}")
+        print(f"ComfyUI settings updated: Server={comfyui_server_address}, Workflow={comfyui_workflow_file}, Node ID={comfyui_output_node_id}, Inference Enabled={enable_image_inference}, API Key set: {'Yes' if deepseek_api_key else 'No'}")
         return "设置已保存！"
 
-    comfyui_server_address_input.change(
-        fn=update_comfyui_settings,
-        inputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input, image_inference_checkbox],
-        outputs=[] # No direct output, just update global state
-    )
-    comfyui_workflow_file_dropdown.change(
-        fn=update_comfyui_settings,
-        inputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input, image_inference_checkbox],
-        outputs=[]
-    )
-    comfyui_output_node_id_input.change(
-        fn=update_comfyui_settings,
-        inputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input, image_inference_checkbox],
-        outputs=[]
-    )
-    image_inference_checkbox.change( # New event for the checkbox
-        fn=update_comfyui_settings,
-        inputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input, image_inference_checkbox],
-        outputs=[]
-    )
+    # Gather all setting inputs into a list
+    comfyui_settings_inputs = [
+        comfyui_server_address_input,
+        comfyui_workflow_file_dropdown,
+        comfyui_output_node_id_input,
+        image_inference_checkbox,
+        deepseek_api_key_input # Add the new input
+    ]
+
+    # Apply the update function to all setting components
+    for component in comfyui_settings_inputs:
+        component.change(
+            fn=update_comfyui_settings,
+            inputs=comfyui_settings_inputs,
+            outputs=[]
+        )
+
     save_comfyui_settings_button.click(
         fn=update_comfyui_settings,
-        inputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input, image_inference_checkbox],
+        inputs=comfyui_settings_inputs,
         outputs=[gr.Textbox(value="设置已保存！", interactive=False, visible=True)] # Provide a temporary status message
     )
     
     # Initial update of ComfyUI settings on app load
     app.load(
-        fn=lambda: (comfyui_server_address, comfyui_workflow_file, comfyui_output_node_id, enable_image_inference),
-        outputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input, image_inference_checkbox],
+        fn=lambda: (comfyui_server_address, comfyui_workflow_file, comfyui_output_node_id, enable_image_inference, deepseek_api_key),
+        outputs=[comfyui_server_address_input, comfyui_workflow_file_dropdown, comfyui_output_node_id_input, image_inference_checkbox, deepseek_api_key_input],
         queue=False
     )
 
