@@ -50,11 +50,15 @@ def load_comfyui_settings():
 
 def save_comfyui_settings(settings):
     try:
+        # To avoid losing data, first read the existing config
+        existing_settings = load_comfyui_settings()
+        # Update it with the new settings
+        existing_settings.update(settings)
         with open(COMFYUI_CONFIG_FILE, "w", encoding="utf-8") as f:
-            json.dump(settings, f, indent=4)
-        print(f"Saved ComfyUI settings: {settings}")
+            json.dump(existing_settings, f, indent=4)
+        print(f"Saved settings: {existing_settings}")
     except Exception as e:
-        print(f"Error saving ComfyUI settings: {e}")
+        print(f"Error saving settings: {e}")
 
 # Load initial settings
 initial_comfyui_settings = load_comfyui_settings()
@@ -65,6 +69,9 @@ enable_image_inference = initial_comfyui_settings.get("enable_image_inference", 
 deepseek_api_key = initial_comfyui_settings.get("deepseek_api_key", "") # Load the new key
 DEFAULT_SYSTEM_PROMPT = "You are a helpful assistant. Your task is to expand a single word into a vivid, descriptive sentence suitable for generating an image. The sentence should be in English and focus on visual details. Make it creative and imaginative."
 deepseek_system_prompt = initial_comfyui_settings.get("deepseek_system_prompt", DEFAULT_SYSTEM_PROMPT)
+# Add learning progress state
+last_dictionary = initial_comfyui_settings.get("last_dictionary", None)
+last_word_index = initial_comfyui_settings.get("last_word_index", 0)
 
 
 # --- Helper Functions ---
@@ -97,15 +104,31 @@ def get_next_word():
 
 # --- Core Logic Functions ---
 async def initial_load_handler():
+    global last_dictionary, last_word_index
     # Use translated names for display, but internally work with filenames
     display_names = get_translated_dictionary_names(list(dictionaries.keys()), dictionary_metadata)
-    if display_names:
-        # Pass the filename (URL) to start_new_session
-        initial_filename = filename_to_description_map.get(display_names[0], list(dictionaries.keys())[0])
-        return await start_new_session(initial_filename)
-    else:
+    
+    if not display_names:
         return ("<div style='font-size: 2em; text-align: center; color: red;'>未找到任何词典文件。请在 'data' 目录中放置 JSON 词典文件。</div>",
-                "", "", "0.00 WPM", "0.00%", [], gr.update(visible=False), gr.update(maximum=0, value=0, visible=False), None, None) # Added None for image_output
+                "", "", "0.00 WPM", "0.00%", [], gr.update(visible=False), gr.update(maximum=0, value=0, visible=False), None, None, None)
+
+    # Check if there is a saved session
+    if last_dictionary and last_dictionary in dictionaries:
+        print(f"Resuming session from dictionary: {last_dictionary} at index: {last_word_index}")
+        # Find the translated description for the dropdown
+        description = dictionary_metadata.get(last_dictionary, last_dictionary)
+        # Start the session and update the dropdown value
+        session_data = await start_new_session(last_dictionary, last_word_index)
+        # The return tuple from start_new_session has 10 items. We need to add the dropdown update.
+        return (*session_data, gr.update(value=description))
+    # If no saved session, start with the first dictionary
+    elif display_names:
+        initial_filename = filename_to_description_map.get(display_names[0], list(dictionaries.keys())[0])
+        session_data = await start_new_session(initial_filename)
+        return (*session_data, gr.update(value=display_names[0]))
+    else: # Should not happen if display_names check passed, but for safety
+        return ("<div style='font-size: 2em; text-align: center; color: red;'>启动失败。</div>",
+                "", "", "0.00 WPM", "0.00%", [], gr.update(visible=False), gr.update(maximum=0, value=0, visible=False), None, None, None)
 
 async def next_dict_handler(current_dict_description):
     # Convert description back to filename
@@ -196,6 +219,13 @@ async def process_typing(user_input_text):
 
     # 如果单词正确完成，需要更新全局状态并获取下一个单词 (不区分大小写)
     if user_input_text.lower() == current_word_data['name'].lower(): # 修改为不区分大小写比较
+        # Save progress before getting the next word
+        progress_to_save = {
+            "last_dictionary": current_dictionary_name,
+            "last_word_index": current_word_index # The index of the *next* word
+        }
+        save_comfyui_settings(progress_to_save)
+
         next_word_data = get_next_word()
         if next_word_data:
             word_html_content = f"""
@@ -546,7 +576,7 @@ with gr.Blocks(theme=gr.themes.Soft(), css=css) as app:
     # Initial setup (moved to app.load event for async handling)
     app.load(
         fn=initial_load_handler, # Use the new async handler
-        outputs=[word_and_details_display, phonetic_display_hidden, translation_display_hidden, wpm_display, accuracy_display, highlighted_output_display, completion_buttons, word_index_slider, audio_player, image_display], # Added image_display
+        outputs=[word_and_details_display, phonetic_display_hidden, translation_display_hidden, wpm_display, accuracy_display, highlighted_output_display, completion_buttons, word_index_slider, audio_player, image_display, dictionary_dropdown], # Added dropdown to outputs
         queue=False # Do not queue initial load
     )
 
