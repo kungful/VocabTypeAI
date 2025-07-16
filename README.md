@@ -7,6 +7,8 @@
 <video src="https://github.com/user-attachments/assets/4b5c8f9c-c3df-443f-ba7a-d3c259a221a9" controls muted loop style="max-width: 100%; height: auto;">
   您的浏览器不支持视频播放。请点击 <a href="https://github.com/user-attachments/assets/b9f21bd2-b38e-4287-a20c-7cb7b3cfaac7">这里</a> 下载视频。
 </video>
+
+<img width="1125" height="576" alt="Image" src="https://github.com/user-attachments/assets/bc46e33b-c775-405f-a3cd-df3b015c2c2b" />
 这是一个基于 Gradio 构建的创新型单词学习应用程序，旨在通过多感官交互（打字、发音、图像）提升用户的单词记忆效率。它集成了有道词典发音和 ComfyUI 图像生成功能，为用户提供一个沉浸式、个性化的学习体验。
 
 ## ✨ 主要特性
