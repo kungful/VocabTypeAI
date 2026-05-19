@@ -9,7 +9,30 @@
 </video>
 
 <img width="1125" height="576" alt="Image" src="https://github.com/user-attachments/assets/bc46e33b-c775-405f-a3cd-df3b015c2c2b" />
-这是一个基于 Gradio 构建的创新型单词学习应用程序，旨在通过多感官交互（打字、发音、图像）提升用户的单词记忆效率。它集成了有道词典发音和 ComfyUI 图像生成功能，为用户提供一个沉浸式、个性化的学习体验。
+## 🖥️ Web 版 (VocabTypeAI Web Edition)
+
+![VocabTypeAI Web](webapp/image.png)
+
+Web 版提供了赛博朋克终端风格的打字学习界面，支持：
+
+- **单词/短句/长句三种模式** 切换练习
+- **Kokoro TTS 本地语音合成** + 有道词典发音
+- **DeepSeek AI 造句**，短句长句语法解析
+- **错词复习、默写模式、智能排序** 等 Qwerty Learner 精华功能
+- **F2 统计面板、F3 错词复习** 快捷键
+- **音标/翻译开关、循环播放控制、预加载音频**
+
+快速启动：
+```bash
+cd webapp
+pip install -r requirements.txt
+python server.py
+```
+浏览器打开 `http://localhost:5000` 即可使用。
+
+---
+
+本项目原基于 Gradio 构建，旨在通过多感官交互（打字、发音、图像）提升用户的单词记忆效率。它集成了有道词典发音和 ComfyUI 图像生成功能，为用户提供一个沉浸式、个性化的学习体验。
 
 ## ✨ 主要特性
 
