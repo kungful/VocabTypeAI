@@ -1,0 +1,10 @@
+{
+  "deepseek_api_key": "",
+  "sentence_api_key": "",
+  "sentence_system_prompt": "You are a helpful assistant that provides sentence examples, phonetics, and detailed translations with parts of speech in a JSON format. Use common abbreviations for parts of speech (e.g., n., v., adj.).",
+  "sentence_prompt_template": "For the word \"{word}\", provide the following in a JSON format:\n1. A short, concise English sentence using the word (5-8 words, everyday conversational style).\n2. The Chinese translation of the short sentence.\n3. A grammatical explanation of the short sentence in Chinese.\n4. A complex English sentence using the word (with clauses, advanced vocabulary, academic or literary context, 15+ words).\n5. The Chinese translation of the complex sentence.\n6. A grammatical explanation of the complex sentence in Chinese.\n7. The International Phonetic Alphabet (IPA) transcription.\n8. A list of its Chinese translations, including part of speech and definition.",
+  "voice": "🇺🇸 Heart (Female)",
+  "speed": 0.9,
+  "tts_use_gpu": "auto",
+  "comfyui_server": ""
+}

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VocabTypeAI // CYBERPUNK TERMINAL</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-container">
+    <div class="bg-layer"></div>
+    <div class="bg-grid"></div>
+    <canvas id="cyber-canvas"></canvas>
+
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="logo-area">
+                <svg width="28" height="28" viewBox="0 0 32 32">
+                    <rect width="32" height="32" fill="none" stroke="#00f0ff" stroke-width="2"/>
+                    <text x="16" y="22" text-anchor="middle" fill="#00f0ff" font-size="16" font-weight="800" font-family="monospace">V</text>
+                </svg>
+                <span class="logo-text">VOCAB//TYPE</span>
+            </div>
+            <div class="topbar-divider"></div>
+            <div class="dict-selector" id="dict-selector">
+                <button class="topbar-btn" id="dict-toggle-btn" title="SELECT DICTIONARY">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    <span id="dict-btn-label">SELECT DICT</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 12,15 18,9"/></svg>
+                </button>
+                <div class="dict-dropdown" id="dict-dropdown">
+                    <div class="dict-search">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="dict-search-input" placeholder="SEARCH DICTIONARY..." autocomplete="off">
+                    </div>
+                    <div class="dict-list" id="dict-list"></div>
+                </div>
+            </div>
+            <div class="topbar-divider"></div>
+            <div class="topbar-stats" id="topbar-stats">
+                <span class="stat"><b id="wpm-value">0.00 WPM</b></span>
+                <span class="stat"><b id="accuracy-value">0.00%</b></span>
+                <span class="stat"><b id="streak-value">STRK 0</b></span>
+                <span class="stat"><b id="mistake-value">ERR 0</b></span>
+                <span class="stat"><b id="progress-value">0/0</b></span>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <label class="toggle-switch" title="MATRIX RAIN">
+                <input type="checkbox" id="matrix-toggle" checked>
+                <span class="toggle-label">01</span>
+            </label>
+            <label class="toggle-switch" title="SENTENCE GENERATION">
+                <input type="checkbox" id="sentence-toggle" checked>
+                <span class="toggle-label">SENTENCE</span>
+            </label>
+            <label class="toggle-switch" title="UPPERCASE MODE">
+                <input type="checkbox" id="uppercase-toggle" checked>
+                <span class="toggle-label">Aa</span>
+            </label>
+            <button class="topbar-btn settings-btn" id="settings-toggle-btn" title="SETTINGS">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="typing-layout">
+            <!-- Left: word info card (visible in sentence mode) -->
+            <div id="word-info-card" class="word-info-card" style="display:none">
+                <div class="info-card-placeholder"></div>
+                <div id="info-card-body" class="info-card-body" style="display:none">
+                    <div id="info-word" class="info-word"></div>
+                    <div id="info-phonetic" class="info-phonetic"></div>
+                    <div id="info-trans" class="info-trans"></div>
+                    <button id="info-play-btn" class="btn-icon-sm" title="PLAY AUDIO" style="margin-top:12px">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Center: typing + sentences -->
+            <div class="typing-column">
+                <div class="typing-panel" id="typing-panel">
+                    <div class="word-display" id="word-display">
+                        <div id="typing-text" class="typing-text"></div>
+                        <div id="word-phonetic" class="word-phonetic"></div>
+                        <div id="word-trans" class="word-trans"></div>
+                    </div>
+                    <div class="typing-hint" id="typing-hint">Tab: 跳过 · F1: 设置 · F2: 统计 · F3: 复习 · Ctrl+L: 禅定 · Alt+1-9: 切换词库</div>
+                    <div class="action-row">
+                        <div class="mode-tabs" id="mode-tabs">
+                            <button class="mode-tab active" data-mode="word">WORD</button>
+                            <button class="mode-tab" data-mode="short">SHORT</button>
+                            <button class="mode-tab" data-mode="complex">COMPLEX</button>
+                        </div>
+                        <span class="action-divider"></span>
+                        <button id="play-audio-btn" class="btn-icon-sm" title="PLAY AUDIO">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                        </button>
+                        <label class="toggle-switch mini-toggle" title="LOOP AUDIO">
+                            <input type="checkbox" id="loop-toggle">
+                            <span class="toggle-label">LOOP</span>
+                        </label>
+                        <span class="action-divider"></span>
+                        <button id="regen-btn" class="btn-icon-sm" title="REGENERATE" style="display:inline-flex">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <audio id="word-audio-player" style="display:none"></audio>
+
+                <div id="sentence-section" class="sentence-section">
+                    <div class="sentence-layout">
+                        <div id="sentence-loading" class="loading-card" style="display:none">
+                            <div class="spinner"></div>
+                            <p>[ GENERATING SENTENCE DATA... ]</p>
+                        </div>
+                        <div id="sentence-result" style="display:none">
+                            <div class="sentence-card glass-card short-sentence-card">
+                                <div class="sentence-card-header">
+                                    <span class="sentence-label">SHORT SENTENCE</span>
+                                    <div class="sentence-header-actions">
+                                        <button class="btn-icon-sm sentence-play-btn" data-type="short" title="PLAY SHORT SENTENCE">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                                        </button>
+                                        <button class="btn-icon-sm sentence-regen-btn" data-type="short" title="REGENERATE SHORT">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="sent-trans" id="short-sentence-trans"></div>
+                                <div class="sent-text-wrap">
+                                    <p id="short-sentence-text" class="sentence-text clickable-sentence"></p>
+                                </div>
+                                <div class="sent-grammar" id="short-sentence-grammar"></div>
+                            </div>
+                            <div class="sentence-card glass-card complex-sentence-card">
+                                <div class="sentence-card-header">
+                                    <span class="sentence-label">COMPLEX SENTENCE</span>
+                                    <div class="sentence-header-actions">
+                                        <button class="btn-icon-sm sentence-play-btn" data-type="complex" title="PLAY COMPLEX SENTENCE">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                                        </button>
+                                        <button class="btn-icon-sm sentence-regen-btn" data-type="complex" title="REGENERATE COMPLEX">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="sent-trans" id="complex-sentence-trans"></div>
+                                <div class="sent-text-wrap">
+                                    <p id="complex-sentence-text" class="sentence-text clickable-sentence"></p>
+                                </div>
+                                <div class="sent-grammar" id="complex-sentence-grammar"></div>
+                            </div>
+                            <div class="history-nav">
+                                <button id="sentence-prev-btn" class="btn-secondary btn-sm" disabled>←</button>
+                                <span id="sentence-history-info" class="history-info">—</span>
+                                <button id="sentence-next-btn" class="btn-secondary btn-sm" disabled>→</button>
+                                <span class="action-divider"></span>
+                                <button id="sentence-play-all-btn" class="btn-icon-sm" title="PLAY ALL">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <audio id="sentence-audio-player" style="display:none"></audio>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: image -->
+            <div class="image-panel" id="image-panel">
+                <div class="image-card" id="image-card">
+                    <div class="image-placeholder">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.25"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                        <span>[ IMAGE MODULE ]</span>
+                    </div>
+                    <img id="word-image" src="" alt="" style="display:none">
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="modal-overlay" id="settings-modal">
+    <div class="modal-card glass-card">
+        <div class="modal-header">
+            <h2>[ 系统设置 ]</h2>
+            <button class="btn-icon-sm modal-close" id="settings-close-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="settings-section"><h3>单词学习 API</h3>
+                <div class="field-group"><label>DEEPSEEK API 密钥（图像提示）</label>
+                    <div class="input-with-icon"><input type="password" id="setting-deepseek-key" class="input-glow" placeholder="sk-...">
+                        <button class="toggle-password" data-target="setting-deepseek-key"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    </div></div>
+                <div class="field-group"><label>COMFYUI 服务器地址</label><input type="text" id="setting-comfyui-addr" class="input-glow" placeholder="127.0.0.1:8188"></div>
+            </div>
+            <div class="settings-section"><h3>造句生成 API</h3>
+                <div class="field-group"><label>DEEPSEEK API 密钥（造句）</label>
+                    <div class="input-with-icon"><input type="password" id="setting-sentence-key" class="input-glow" placeholder="sk-...">
+                        <button class="toggle-password" data-target="setting-sentence-key"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    </div></div>
+                <div class="field-group"><label>系统提示词</label><textarea id="setting-sentence-system" class="textarea-glow" rows="3"></textarea></div>
+                <div class="field-group"><label>提示词模板</label><textarea id="setting-sentence-template" class="textarea-glow" rows="8"></textarea></div>
+            </div>
+            <div class="settings-section"><h3>语音合成引擎</h3>
+                <div class="field-row">
+                    <div class="field-group flex-1"><label>语音</label><select id="setting-voice" class="select-glow"></select></div>
+                    <div class="field-group" style="width:120px"><label>语速</label><div class="range-group"><input type="range" id="setting-speed" min="0.5" max="2.0" step="0.1" value="1.0"><span class="range-value" id="speed-value">1.0x</span></div></div>
+                    <div class="field-group" style="width:110px"><label>硬件加速</label><select id="setting-tts-gpu" class="select-glow"><option value="auto">自动</option><option value="gpu">GPU</option><option value="cpu">CPU</option></select></div>
+                </div>
+            </div>
+            <div class="settings-section"><h3>训练控制</h3>
+                <div class="settings-grid">
+                    <label class="setting-check"><input type="checkbox" id="setting-auto-word"><span>自动播放单词发音</span></label>
+                    <label class="setting-check"><input type="checkbox" id="setting-auto-sentence"><span>自动播放句子发音</span></label>
+                    <label class="setting-check"><input type="checkbox" id="setting-loop-idle"><span>仅空闲时循环播放</span></label>
+                    <label class="setting-check"><input type="checkbox" id="setting-prefetch-audio"><span>预加载下一个音频</span></label>
+                    <label class="setting-check"><input type="checkbox" id="setting-dictation-review"><span>默写复习模式</span></label>
+                    <label class="setting-check"><input type="checkbox" id="setting-strict-typing"><span>按错键不输入</span></label>
+                    <label class="setting-check"><input type="checkbox" id="setting-show-phonetic"><span>显示音标</span></label>
+                    <label class="setting-check"><input type="checkbox" id="setting-show-translation"><span>显示翻译</span></label>
+                </div>
+                <div class="field-row">
+                    <div class="field-group flex-1"><label>单词顺序</label><select id="setting-word-order" class="select-glow"><option value="sequence">顺序</option><option value="random">随机</option><option value="review">只复习错词</option><option value="smart">智能（错词优先）</option></select></div>
+                    <div class="field-group" style="width:150px"><label>错词本</label><button id="clear-review-btn" class="btn-secondary btn-sm" type="button">清空</button></div>
+                </div>
+            </div>
+            <div class="modal-actions"><button id="save-settings-btn" class="btn-primary">保存设置</button><span id="settings-status" class="settings-status"></span></div>
+        </div>
+    </div>
+</div>
+
+<!-- Word Pick Modal -->
+<div class="modal-overlay" id="wordpick-modal">
+    <div class="wordpick-card">
+        <div class="wordpick-header">
+            <span id="wordpick-title">[ 选词复习 ]</span>
+            <span class="wordpick-hint" id="wordpick-hint">←→ 选择 · ↑↓ 换行 · Enter 学习 · Space 跳过</span>
+        </div>
+        <div class="wordpick-grid" id="wordpick-grid"></div>
+        <div class="wordpick-actions">
+            <button id="wordpick-learn-btn" class="btn-primary">学习选中</button>
+            <button id="wordpick-skip-btn" class="btn-secondary">全部跳过 [Space]</button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/app.js"></script>
+
+<!-- Font Size Panel -->
+<div class="font-panel" id="font-panel">
+    <div class="font-panel-toggle" id="font-panel-toggle">FS</div>
+    <div class="font-panel-body" id="font-panel-body" style="display:none">
+        <div class="font-slider-row">
+            <span class="font-slider-label">TYPE</span>
+            <input type="range" id="font-type" min="24" max="72" value="42" step="1">
+            <span class="font-slider-val" id="font-type-val">42</span>
+        </div>
+        <div class="font-slider-row">
+            <span class="font-slider-label">SENT</span>
+            <input type="range" id="font-sentence" min="12" max="36" value="16" step="1">
+            <span class="font-slider-val" id="font-sentence-val">16</span>
+        </div>
+        <div class="font-slider-row">
+            <span class="font-slider-label">TRANS</span>
+            <input type="range" id="font-trans" min="12" max="36" value="18" step="1">
+            <span class="font-slider-val" id="font-trans-val">18</span>
+        </div>
+        <div class="font-slider-row">
+            <span class="font-slider-label">GRAM</span>
+            <input type="range" id="font-grammar" min="12" max="28" value="14" step="1">
+            <span class="font-slider-val" id="font-grammar-val">14</span>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

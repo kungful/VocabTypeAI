@@ -1,0 +1,12 @@
+__pycache__/
+.uv-cache/
+*.pyc
+*.log
+node_modules/
+
+webapp/__pycache__/
+webapp/.uv-cache/
+webapp/audio_cache/
+webapp/sentence_cache/
+webapp/config.json
+webapp/*.log
